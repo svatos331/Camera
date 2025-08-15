@@ -465,68 +465,30 @@ class CameraFragment : Fragment() {
 
         // Listener for button used to capture photo
         cameraUiContainerBinding?.cameraCaptureButton?.setOnClickListener {
-
-            // Get a stable reference of the modifiable image capture use case
             imageCapture?.let { imageCapture ->
 
-                // Create time stamped name and MediaStore entry.
-                val name = SimpleDateFormat(FILENAME, Locale.US)
-                    .format(System.currentTimeMillis())
-                val contentValues = ContentValues().apply {
-                    put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-                    put(MediaStore.MediaColumns.MIME_TYPE, PHOTO_TYPE)
-                    if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                        val appName = requireContext().resources.getString(R.string.app_name)
-                        put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/${appName}")
-                    }
-                }
+                // Делаем снимок в память, а не в файл
+                imageCapture.takePicture(ContextCompat.getMainExecutor(requireContext()),
+                    object : ImageCapture.OnImageCapturedCallback() {
 
-                // Create output options object which contains file + metadata
-                val outputOptions = ImageCapture.OutputFileOptions
-                    .Builder(requireContext().contentResolver,
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        contentValues)
-                    .build()
+                        override fun onCaptureSuccess(imageProxy: ImageProxy) {
+                            super.onCaptureSuccess(imageProxy)
 
-                // Setup image capture listener which is triggered after photo has been taken
-                imageCapture.takePicture(
-                        outputOptions, cameraExecutor, object : ImageCapture.OnImageSavedCallback {
-                    override fun onError(exc: ImageCaptureException) {
-                        Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
-                    }
+                            // Преобразуем в ByteArray
+                            val buffer = imageProxy.planes[0].buffer
+                            val bytes = ByteArray(buffer.remaining())
+                            buffer.get(bytes)
+                            imageProxy.close()
 
-                    override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                        val savedUri = output.savedUri
-                        Log.d(TAG, "Photo capture succeeded: $savedUri")
-
-                        // We can only change the foreground Drawable using API level 23+ API
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            // Update the gallery thumbnail with latest picture taken
-                            setGalleryThumbnail(savedUri.toString())
+                            // Отправляем фото
+                            sendPhoto(bytes)
                         }
 
-                        // Implicit broadcasts will be ignored for devices running API level >= 24
-                        // so if you only target API level 24+ you can remove this statement
-                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-                            // Suppress deprecated Camera usage needed for API level 23 and below
-                            @Suppress("DEPRECATION")
-                            requireActivity().sendBroadcast(
-                                    Intent(android.hardware.Camera.ACTION_NEW_PICTURE, savedUri)
-                            )
+                        override fun onError(exception: ImageCaptureException) {
+                            Log.e("Camera", "Ошибка съемки: ${exception.message}", exception)
                         }
                     }
-                })
-
-                // We can only change the foreground Drawable using API level 23+ API
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-                    // Display flash animation to indicate that photo was captured
-                    fragmentCameraBinding.root.postDelayed({
-                        fragmentCameraBinding.root.foreground = ColorDrawable(Color.WHITE)
-                        fragmentCameraBinding.root.postDelayed(
-                                { fragmentCameraBinding.root.foreground = null }, ANIMATION_FAST_MILLIS)
-                    }, ANIMATION_SLOW_MILLIS)
-                }
+                )
             }
         }
 
@@ -570,6 +532,33 @@ class CameraFragment : Fragment() {
         } catch (exception: CameraInfoUnavailableException) {
             cameraUiContainerBinding?.cameraSwitchButton?.isEnabled = false
         }
+    }
+
+    private fun sendPhoto(photoBytes: ByteArray) {
+        Thread {
+            try {
+                val client = OkHttpClient()
+
+                val requestBody = MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart(
+                        "data",
+                        "image.jpg",
+                        RequestBody.create("image/jpeg".toMediaTypeOrNull(), photoBytes)
+                    )
+                    .build()
+
+                val request = Request.Builder()
+                    .url("https://sviatoslav.app.n8n.cloud/webhook-test/64018109-935c-439c-9e65-2bb54a3f6217")
+                    .post(requestBody)
+                    .build()
+
+                val response = client.newCall(request).execute()
+                Log.d("Camera", "Ответ сервера: ${response.code}")
+            } catch (e: Exception) {
+                Log.e("Camera", "Ошибка отправки", e)
+            }
+        }.start()
     }
 
     /** Returns true if the device has an available back camera. False otherwise */
