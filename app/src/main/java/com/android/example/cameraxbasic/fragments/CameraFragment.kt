@@ -566,7 +566,7 @@ class CameraFragment : Fragment() {
                 val response = client.newCall(request).execute()
                 Log.d("Camera", "Ответ сервера: ${response.code}")
             } catch (e: Exception) {
-                Log.e("Camera", "Ошибка отправки", e)
+                Log.e("Camera", "Ошибка отправки123", e)
             }
         }.start()
     }
