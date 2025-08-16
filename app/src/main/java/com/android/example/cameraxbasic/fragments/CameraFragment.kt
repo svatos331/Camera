@@ -347,33 +347,18 @@ class CameraFragment : Fragment() {
                 when (cameraState.type) {
                     CameraState.Type.PENDING_OPEN -> {
                         // Ask the user to close other camera apps
-                        Toast.makeText(context,
-                                "CameraState: Pending Open",
-                                Toast.LENGTH_SHORT).show()
                     }
                     CameraState.Type.OPENING -> {
                         // Show the Camera UI
-                        Toast.makeText(context,
-                                "CameraState: Opening",
-                                Toast.LENGTH_SHORT).show()
                     }
                     CameraState.Type.OPEN -> {
                         // Setup Camera resources and begin processing
-                        Toast.makeText(context,
-                                "CameraState: Open",
-                                Toast.LENGTH_SHORT).show()
                     }
                     CameraState.Type.CLOSING -> {
                         // Close camera UI
-                        Toast.makeText(context,
-                                "CameraState: Closing",
-                                Toast.LENGTH_SHORT).show()
                     }
                     CameraState.Type.CLOSED -> {
                         // Free camera resources
-                        Toast.makeText(context,
-                                "CameraState: Closed",
-                                Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -383,49 +368,28 @@ class CameraFragment : Fragment() {
                     // Open errors
                     CameraState.ERROR_STREAM_CONFIG -> {
                         // Make sure to setup the use cases properly
-                        Toast.makeText(context,
-                                "Stream config error",
-                                Toast.LENGTH_SHORT).show()
                     }
                     // Opening errors
                     CameraState.ERROR_CAMERA_IN_USE -> {
                         // Close the camera or ask user to close another camera app that's using the
                         // camera
-                        Toast.makeText(context,
-                                "Camera in use",
-                                Toast.LENGTH_SHORT).show()
                     }
                     CameraState.ERROR_MAX_CAMERAS_IN_USE -> {
                         // Close another open camera in the app, or ask the user to close another
                         // camera app that's using the camera
-                        Toast.makeText(context,
-                                "Max cameras in use",
-                                Toast.LENGTH_SHORT).show()
                     }
                     CameraState.ERROR_OTHER_RECOVERABLE_ERROR -> {
-                        Toast.makeText(context,
-                                "Other recoverable error",
-                                Toast.LENGTH_SHORT).show()
                     }
                     // Closing errors
                     CameraState.ERROR_CAMERA_DISABLED -> {
                         // Ask the user to enable the device's cameras
-                        Toast.makeText(context,
-                                "Camera disabled",
-                                Toast.LENGTH_SHORT).show()
                     }
                     CameraState.ERROR_CAMERA_FATAL_ERROR -> {
                         // Ask the user to reboot the device to restore camera function
-                        Toast.makeText(context,
-                                "Fatal error",
-                                Toast.LENGTH_SHORT).show()
                     }
                     // Closed errors
                     CameraState.ERROR_DO_NOT_DISTURB_MODE_ENABLED -> {
                         // Ask the user to disable the "Do Not Disturb" mode, then reopen the camera
-                        Toast.makeText(context,
-                                "Do not disturb mode enabled",
-                                Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -573,7 +537,7 @@ class CameraFragment : Fragment() {
                     .build()
 
                 val request = Request.Builder()
-                    .url("https://sviatoslav.app.n8n.cloud/webhook-test/64018109-935c-439c-9e65-2bb54a3f6217")
+                    .url("https://sviatoslav.app.n8n.cloud/webhook/64018109-935c-439c-9e65-2bb54a3f6217")
                     .post(requestBody)
                     .build()
 
