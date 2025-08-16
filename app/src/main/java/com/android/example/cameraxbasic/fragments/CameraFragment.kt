@@ -489,7 +489,6 @@ class CameraFragment : Fragment() {
                             val bytes = ByteArray(buffer.remaining())
                             buffer.get(bytes)
                             imageProxy.close()
-
                             // Отправляем фото
                             sendPhoto(bytes)
                         }
@@ -545,6 +544,21 @@ class CameraFragment : Fragment() {
     }
 
     private fun sendPhoto(photoBytes: ByteArray) {
+
+        val decorView = requireActivity().window.decorView as ViewGroup
+
+        val overlayView = View(requireContext())
+        overlayView.setBackgroundColor(Color.WHITE)
+        overlayView.layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+
+        decorView.addView(overlayView)
+
+        overlayView.postDelayed({
+            decorView.removeView(overlayView)
+        }, 500)
         Thread {
             try {
                 val client = OkHttpClient()
